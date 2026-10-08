@@ -1,1 +1,8 @@
 /* You can add global styles to this file, and also import other style files */
+@import "tailwindcss";
+@config "../tailwind.config.js";
+@import "flowbite/src/themes/default";
+@plugin "flowbite/plugin";
+@source "../node_modules/flowbite";
+
+body { @apply bg-[#eff1f5] dark:bg-slate-950; }

@@ -1,0 +1,107 @@
+<div
+    class="min-h-screen flex items-center justify-center bg-gradient-to-br from-brand-purple-light/20 via-white to-brand-pink-light/20 px-4 py-8">
+    <div class="w-full max-w-5xl grid lg:grid-cols-2 gap-10 items-center">
+
+        <!-- Left side: Branding + Illustration -->
+        <div class="hidden lg:flex flex-col gap-6">
+            <div class="inline-flex items-center gap-2 w-fit">
+                <div class="w-10 h-10 rounded-xl bg-brand-gradient flex items-center justify-center">
+                    <i class="fa-solid fa-bolt text-white text-lg"></i>
+                </div>
+                <span class="text-2xl font-extrabold text-brand-purple-dark">Social<span
+                        class="text-brand-pink">App</span></span>
+            </div>
+
+            <h1 class="text-4xl font-extrabold text-gray-800 leading-tight">
+                Connect with friends<br />and the world around you
+            </h1>
+            <p class="text-gray-500 text-lg">Join our community and share your moments with the people who matter.</p>
+
+            <div class="relative rounded-card overflow-hidden shadow-card border border-white">
+                <img src="/assets/loginP.jpg" alt="Team collaboration illustration"
+                    class="w-full h-auto max-h-[380px] object-cover" />
+            </div>
+        </div>
+
+        <!-- Right side: Login card -->
+        <div class="bg-white rounded-card shadow-card border border-gray-100 p-8">
+
+            <!-- Tabs -->
+            <div class="flex bg-gray-100 rounded-pill p-1 mb-6">
+                <div
+                    class="flex-1 text-center py-2 rounded-pill bg-white shadow-sm font-bold text-brand-purple-dark text-sm">
+                    Login
+                </div>
+                <a routerLink="/register"
+                    class="flex-1 text-center py-2 rounded-pill font-semibold text-gray-400 text-sm hover:text-gray-600 transition">
+                    Register
+                </a>
+            </div>
+
+            <h2 class="text-2xl font-extrabold text-gray-800">Welcome back 👋</h2>
+            <p class="text-gray-400 text-sm mb-6">Log in to continue your journey with us.</p>
+
+            <form [formGroup]="loginForm" (ngSubmit)="submitForm()" class="space-y-4">
+
+                <!-- Email / Username -->
+                <div>
+                    <div class="relative">
+                        <i class="fa-regular fa-user absolute right-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                        <input type="text" formControlName="login" placeholder="Email or username" class="w-full bg-gray-50 border border-gray-200 rounded-xl py-3 pr-11 pl-4 text-sm text-gray-700
+                     focus:outline-none focus:ring-2 focus:ring-brand-purple focus:border-transparent transition" />
+                    </div>
+                    @if (loginForm.get('login')?.invalid && loginForm.get('login')?.touched) {
+                    <p class="text-danger text-xs mt-1">Please enter a valid email or username (min 3 characters).</p>
+                    }
+                </div>
+
+                <!-- Password -->
+                <div>
+                    <div class="relative">
+                        <i class="fa-solid fa-lock absolute right-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                        <input [type]="isPasswordVisible ? 'text' : 'password'" formControlName="password"
+                            placeholder="Password" class="w-full bg-gray-50 border border-gray-200 rounded-xl py-3 pr-11 pl-11 text-sm text-gray-700
+                     focus:outline-none focus:ring-2 focus:ring-brand-purple focus:border-transparent transition" />
+                        <button type="button" (click)="isPasswordVisible = !isPasswordVisible"
+                            class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-brand-purple transition">
+                            <i class="fa-solid" [class.fa-eye]="!isPasswordVisible"
+                                [class.fa-eye-slash]="isPasswordVisible"></i>
+                        </button>
+                    </div>
+                    @if (loginForm.get('password')?.invalid && loginForm.get('password')?.touched) {
+                    <p class="text-danger text-xs mt-1">
+                        Password must be at least 8 characters, with an uppercase letter, lowercase letter, number, and
+                        symbol.
+                    </p>
+                    }
+                </div>
+
+                <!-- Server error -->
+                @if (msgError) {
+                <div class="bg-danger/10 border border-danger/30 text-danger text-sm rounded-xl px-4 py-2">
+                    {{ msgError }}
+                </div>
+                }
+
+                <!-- Submit -->
+                <button type="submit" [disabled]="loading" class="w-full bg-brand-gradient text-white font-bold py-3 rounded-pill shadow-card
+                 hover:opacity-90 active:scale-[0.98] transition disabled:opacity-60 disabled:cursor-not-allowed
+                 flex items-center justify-center gap-2">
+                    @if (loading) {
+                    <i class="fa-solid fa-circle-notch fa-spin"></i>
+                    <span>Logging in...</span>
+                    } @else {
+                    <span>Log In</span>
+                    }
+                </button>
+
+                <div class="text-center">
+                    <a routerLink="/forget-password"
+                        class="text-brand-purple-dark text-sm font-semibold hover:underline">
+                        Forgot password?
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

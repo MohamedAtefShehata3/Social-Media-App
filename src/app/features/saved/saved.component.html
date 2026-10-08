@@ -1,0 +1,151 @@
+<div class="min-h-screen bg-[#eff1f5] dark:bg-slate-950">
+    <section class="mx-auto max-w-3xl px-4 py-4">
+
+        <!-- Header -->
+        <header class="mb-4 flex items-center justify-between rounded-2xl bg-white p-5 shadow-[0_8px_30px_rgba(15,31,61,.08)]
+             dark:bg-slate-900 dark:shadow-[0_8px_30px_rgba(0,0,0,.4)]">
+            <div class="flex items-center gap-3">
+                <div
+                    class="grid h-12 w-12 place-items-center rounded-2xl bg-[#e8f1fd] text-xl text-[#1a73e8] dark:bg-[#1a73e8]/20 dark:text-sky-300">
+                    <i class="fa-solid fa-bookmark"></i>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-extrabold text-[#0f1f3d] dark:text-white">Saved posts</h1>
+                    <p class="text-sm text-slate-500 dark:text-slate-400">Posts you bookmarked to read later.</p>
+                </div>
+            </div>
+            @if (!isLoading && !hasError) {
+            <span
+                class="rounded-full bg-[#e8f1fd] px-3 py-1 text-sm font-bold text-[#1a73e8] dark:bg-[#1a73e8]/20 dark:text-sky-300">
+                {{ posts.length }}
+            </span>
+            }
+        </header>
+
+        @if (isLoading) {
+        @for (i of [1, 2]; track i) {
+        <div class="mb-4 animate-pulse space-y-4 rounded-2xl bg-white p-4 dark:bg-slate-900">
+            <div class="flex items-center gap-3">
+                <div class="h-10 w-10 rounded-full bg-slate-200 dark:bg-slate-700"></div>
+                <div class="flex-1 space-y-2">
+                    <div class="h-3 w-1/3 rounded bg-slate-200 dark:bg-slate-700"></div>
+                    <div class="h-3 w-1/4 rounded bg-slate-200 dark:bg-slate-700"></div>
+                </div>
+            </div>
+            <div class="h-3 w-2/3 rounded bg-slate-200 dark:bg-slate-700"></div>
+            <div class="h-40 rounded-xl bg-slate-200 dark:bg-slate-700"></div>
+        </div>
+        }
+        } @else if (hasError) {
+        <div class="rounded-2xl border border-red-200 bg-red-50 p-6 text-center text-sm text-red-600
+               dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-300">
+            Failed to load saved posts.
+            <button type="button" (click)="loadSaved()" class="ml-1 font-semibold underline">Retry</button>
+        </div>
+        } @else {
+        @for (post of posts; track post._id) {
+        <article class="mb-4 overflow-hidden rounded-2xl bg-white shadow-sm dark:bg-slate-900">
+
+            <!-- Header -->
+            <header class="flex items-center gap-3 p-4">
+                <img class="h-11 w-11 rounded-full object-cover ring-2 ring-[#dde5f0] dark:ring-slate-700"
+                    [src]="post.user.photo" alt="" />
+                <div class="min-w-0">
+                    <a [routerLink]="['/profile', post.user._id]"
+                        class="block truncate text-sm font-bold text-[#0f1f3d] hover:text-[#1a73e8] dark:text-white dark:hover:text-sky-300">
+                        {{ post.user.name }}
+                    </a>
+                    <div class="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+                        <span>&#64;{{ post.user.username }}</span>
+                        <span>·</span>
+                        <time>{{ post.createdAt | timeAgo }}</time>
+                        <span>·</span>
+                        <i class="fa-solid" [class]="privacyIcon(post.privacy)" [title]="post.privacy"></i>
+                    </div>
+                </div>
+
+                <div class="ml-auto flex items-center gap-1">
+                    <a [routerLink]="['/details', post._id]" class="rounded-full px-3 py-1.5 text-xs font-semibold text-[#1a73e8] transition hover:bg-[#e8f1fd]
+                       dark:text-sky-300 dark:hover:bg-slate-800">
+                        View details
+                    </a>
+                    <button type="button" title="Remove from saved" (click)="unsave(post)" class="grid h-9 w-9 place-items-center rounded-full text-[#1a73e8] transition hover:bg-[#e8f1fd]
+                       dark:text-sky-300 dark:hover:bg-slate-800">
+                        <i class="fa-solid fa-bookmark"></i>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Body -->
+            @if (post.body) {
+            <p class="whitespace-pre-line px-4 pb-3 text-[15px] leading-relaxed text-[#0f1f3d] dark:text-slate-100">
+                {{ post.body }}
+            </p>
+            }
+
+            <!-- Shared post -->
+            @if (post.isShared && post.sharedPost) {
+            <a [routerLink]="['/details', post.sharedPost._id]" class="mx-4 mb-3 block overflow-hidden rounded-xl border border-[#dde5f0] bg-[#f6f9fe] transition
+                     hover:border-[#1a73e8]/40 dark:border-slate-700 dark:bg-slate-800/50">
+                <div class="flex items-center gap-2 p-3">
+                    <img class="h-8 w-8 rounded-full object-cover" [src]="post.sharedPost.user.photo" alt="" />
+                    <div class="min-w-0">
+                        <strong class="block truncate text-sm text-[#0f1f3d] dark:text-white">{{
+                            post.sharedPost.user.name }}</strong>
+                        <time class="text-xs text-slate-500 dark:text-slate-400">{{ post.sharedPost.createdAt | timeAgo
+                            }}</time>
+                    </div>
+                </div>
+                @if (post.sharedPost.body) {
+                <p class="line-clamp-3 px-3 pb-3 text-sm text-slate-600 dark:text-slate-300">{{ post.sharedPost.body }}
+                </p>
+                }
+                @if (post.sharedPost.image) {
+                <img [src]="post.sharedPost.image" alt="" class="max-h-72 w-full object-cover" />
+                }
+            </a>
+            }
+
+            <!-- Image -->
+            @if (post.image) {
+            <div class="flex justify-center bg-[#f6f9fe] dark:bg-slate-800/50">
+                <img [src]="post.image" alt="" class="block max-h-[480px] w-auto max-w-full object-contain" />
+            </div>
+            }
+
+            <!-- Counters -->
+            <div
+                class="flex items-center gap-4 border-t border-[#dde5f0] px-4 py-2 text-xs text-slate-500 dark:border-slate-700 dark:text-slate-400">
+                <span><i class="fa-solid fa-thumbs-up mr-1 text-[#1a73e8]"></i>{{ post.likesCount }} likes</span>
+                <span>{{ post.commentsCount }} comments</span>
+                <span>{{ post.sharesCount }} shares</span>
+            </div>
+
+            <!-- Actions -->
+            <div class="grid grid-cols-2 gap-1 border-t border-[#dde5f0] p-1.5 dark:border-slate-700">
+                <button type="button" (click)="onLike(post)"
+                    class="flex items-center justify-center gap-2 rounded-xl py-2 text-sm font-semibold transition hover:bg-[#e8f1fd] dark:hover:bg-slate-800"
+                    [class]="post.isLiked ? 'text-[#1a73e8] dark:text-sky-300' : 'text-[#0f1f3d] dark:text-slate-300'">
+                    <i [class]="post.isLiked ? 'fa-solid fa-thumbs-up' : 'fa-regular fa-thumbs-up'"></i> Like
+                </button>
+                <a [routerLink]="['/details', post._id]" class="flex items-center justify-center gap-2 rounded-xl py-2 text-sm font-semibold text-[#0f1f3d] transition
+                     hover:bg-[#e8f1fd] dark:text-slate-300 dark:hover:bg-slate-800">
+                    <i class="fa-regular fa-comment"></i> Comment
+                </a>
+            </div>
+        </article>
+        } @empty {
+        <div
+            class="rounded-2xl border border-[#dde5f0] bg-white py-14 text-center dark:border-slate-700 dark:bg-slate-900">
+            <i class="fa-regular fa-bookmark mb-3 block text-4xl text-slate-300 dark:text-slate-600"></i>
+            <p class="font-semibold text-[#0f1f3d] dark:text-white">Nothing saved yet</p>
+            <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Bookmark posts and they'll show up here.</p>
+            <a routerLink="/feed"
+                class="mt-5 inline-block rounded-full bg-[#1a73e8] px-6 py-2 text-sm font-bold text-white transition hover:bg-[#1558b8]">
+                Browse feed
+            </a>
+        </div>
+        }
+        }
+    </section>
+</div>

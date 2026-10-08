@@ -1,0 +1,19 @@
+<section class="py-4 lg:py-6 min-h-screen" [class.bg-[#f4f6f8]]="!isDarkMode" [class.bg-[#111827]]="isDarkMode">
+    <div
+        class="max-w-screen-xl mx-auto p-2 grid grid-cols-1 lg:grid-cols-[240px_minmax(0,1fr)_320px] gap-4 lg:gap-6 items-start">
+        <!-- ===== Left Sidebar ===== -->
+        <div class="lg:col-start-1 lg:row-start-1">
+            <app-left-side></app-left-side>
+        </div>
+
+        <!-- ===== Content ===== -->
+        <div class="lg:col-start-2 lg:row-start-1 w-full flex flex-col gap-4">
+            <app-feed-content></app-feed-content>
+        </div>
+
+        <!-- ===== Right Sidebar ===== -->
+        <div class="lg:col-start-3 lg:row-start-1">
+            <app-right-side></app-right-side>
+        </div>
+    </div>
+</section>

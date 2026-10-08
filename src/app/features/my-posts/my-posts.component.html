@@ -1,0 +1,133 @@
+@if (isLoading) {
+@for (i of [1, 2]; track i) {
+<div class="mb-4 animate-pulse space-y-4 rounded-2xl bg-white p-4 dark:bg-slate-900">
+    <div class="flex items-center gap-3">
+        <div class="h-10 w-10 rounded-full bg-slate-200 dark:bg-slate-700"></div>
+        <div class="flex-1 space-y-2">
+            <div class="h-3 w-1/3 rounded bg-slate-200 dark:bg-slate-700"></div>
+            <div class="h-3 w-1/4 rounded bg-slate-200 dark:bg-slate-700"></div>
+        </div>
+    </div>
+    <div class="h-3 w-2/3 rounded bg-slate-200 dark:bg-slate-700"></div>
+</div>
+}
+} @else if (hasError) {
+<div class="rounded-2xl border border-red-200 bg-red-50 p-6 text-center text-sm text-red-600
+           dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-300">
+    Failed to load posts.
+    <button type="button" (click)="loadPosts()" class="ml-1 font-semibold underline">Retry</button>
+</div>
+} @else {
+@for (post of posts; track post._id) {
+<article class="mb-4 overflow-hidden rounded-2xl bg-white shadow-sm dark:bg-slate-900">
+
+    <!-- Header -->
+    <header class="flex items-center gap-3 p-4">
+        <img class="h-10 w-10 rounded-full object-cover ring-2 ring-[#dde5f0] dark:ring-slate-700"
+            [src]="post.user.photo" alt="" />
+        <div class="min-w-0">
+            <strong class="block truncate text-sm text-[#0f1f3d] dark:text-white">{{ post.user.name }}</strong>
+            <div class="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+                <span>&#64;{{ post.user.username }}</span>
+                <span>·</span>
+                <time>{{ post.createdAt | timeAgo }}</time>
+                <span>·</span>
+                <i class="fa-solid" [class]="privacyIcon(post.privacy)" [title]="post.privacy"></i>
+            </div>
+        </div>
+
+        <div class="ml-auto flex items-center gap-1">
+            <a [routerLink]="['/details', post._id]"
+                class="rounded-full px-3 py-1.5 text-xs font-semibold text-[#1a73e8] transition hover:bg-[#e8f1fd] dark:text-sky-300 dark:hover:bg-slate-800">
+                View details
+            </a>
+            @if (isOwner) {
+            <button type="button" title="Delete" (click)="askDelete(post._id)" class="grid h-8 w-8 place-items-center rounded-full text-slate-500 transition hover:bg-red-50 hover:text-red-500
+                     dark:text-slate-400 dark:hover:bg-red-950/40">
+                <i class="fa-solid fa-trash text-sm"></i>
+            </button>
+            }
+        </div>
+    </header>
+
+    <!-- Delete confirm -->
+    @if (confirmDeleteId === post._id) {
+    <div class="mx-4 mb-3 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-2.5
+                 text-sm text-red-600 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-300">
+        <span>Delete this post permanently?</span>
+        <div class="flex gap-2">
+            <button type="button" (click)="cancelDelete()"
+                class="rounded-full px-3 py-1 font-semibold hover:bg-red-100 dark:hover:bg-red-900/30">
+                Cancel
+            </button>
+            <button type="button" (click)="confirmDelete()"
+                class="rounded-full bg-red-500 px-4 py-1 font-semibold text-white hover:bg-red-600">
+                Delete
+            </button>
+        </div>
+    </div>
+    }
+
+    <!-- Body -->
+    @if (post.body) {
+    <p class="whitespace-pre-line px-4 pb-3 text-[15px] text-[#0f1f3d] dark:text-slate-100">{{ post.body }}</p>
+    }
+
+    <!-- Shared post -->
+    @if (post.isShared && post.sharedPost) {
+    <a [routerLink]="['/details', post.sharedPost._id]" class="mx-4 mb-3 block overflow-hidden rounded-xl border border-[#dde5f0] bg-[#f6f9fe] transition hover:border-[#1a73e8]/40
+                 dark:border-slate-700 dark:bg-slate-800/50">
+        <div class="flex items-center gap-2 p-3">
+            <img class="h-8 w-8 rounded-full object-cover" [src]="post.sharedPost.user.photo" alt="" />
+            <div class="min-w-0">
+                <strong class="block truncate text-sm text-[#0f1f3d] dark:text-white">{{ post.sharedPost.user.name
+                    }}</strong>
+                <time class="text-xs text-slate-500 dark:text-slate-400">{{ post.sharedPost.createdAt | timeAgo
+                    }}</time>
+            </div>
+        </div>
+        @if (post.sharedPost.body) {
+        <p class="line-clamp-3 px-3 pb-3 text-sm text-slate-600 dark:text-slate-300">{{ post.sharedPost.body }}</p>
+        }
+        @if (post.sharedPost.image) {
+        <img [src]="post.sharedPost.image" alt="" class="max-h-72 w-full object-cover" />
+        }
+    </a>
+    }
+
+    <!-- Image -->
+    @if (post.image) {
+    <div class="flex justify-center bg-[#f6f9fe] dark:bg-slate-800/50">
+        <img [src]="post.image" alt="" class="block max-h-[480px] w-auto max-w-full object-contain" />
+    </div>
+    }
+
+    <!-- Counters -->
+    <div
+        class="flex items-center gap-4 border-t border-[#dde5f0] px-4 py-2 text-xs text-slate-500 dark:border-slate-700 dark:text-slate-400">
+        <span><i class="fa-solid fa-thumbs-up mr-1 text-[#1a73e8]"></i>{{ post.likesCount }} likes</span>
+        <span>{{ post.commentsCount }} comments</span>
+        <span>{{ post.sharesCount }} shares</span>
+    </div>
+
+    <!-- Actions -->
+    <div class="grid grid-cols-2 gap-1 border-t border-[#dde5f0] p-1.5 dark:border-slate-700">
+        <button type="button" (click)="onLike(post)"
+            class="flex items-center justify-center gap-2 rounded-xl py-2 text-sm font-semibold transition hover:bg-[#e8f1fd] dark:hover:bg-slate-800"
+            [class]="post.isLiked ? 'text-[#1a73e8] dark:text-sky-300' : 'text-[#0f1f3d] dark:text-slate-300'">
+            <i [class]="post.isLiked ? 'fa-solid fa-thumbs-up' : 'fa-regular fa-thumbs-up'"></i> Like
+        </button>
+        <a [routerLink]="['/details', post._id]" class="flex items-center justify-center gap-2 rounded-xl py-2 text-sm font-semibold text-[#0f1f3d] transition
+                 hover:bg-[#e8f1fd] dark:text-slate-300 dark:hover:bg-slate-800">
+            <i class="fa-regular fa-comment"></i> Comment
+        </a>
+    </div>
+</article>
+} @empty {
+<div class="rounded-2xl border border-[#dde5f0] bg-white py-12 text-center text-sm text-slate-500
+             dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400">
+    <i class="fa-regular fa-file-lines mb-2 block text-3xl text-slate-300 dark:text-slate-600"></i>
+    No posts yet.
+</div>
+}
+}

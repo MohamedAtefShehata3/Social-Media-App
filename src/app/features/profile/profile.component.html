@@ -1,0 +1,166 @@
+@if (isLoading) {
+<div class="min-h-screen bg-[#eff1f5] py-16 text-center text-slate-500 dark:bg-slate-950 dark:text-slate-400">
+    Loading...
+</div>
+} @else if (userData) {
+<div class="min-h-screen bg-[#eff1f5] dark:bg-slate-950">
+    <section class="mx-auto max-w-[1250px] px-4 py-4">
+
+        <!-- Cover -->
+        <div class="relative h-48 rounded-t-[28px] bg-cover bg-center sm:h-60
+             bg-gradient-to-r from-[#1b2438] via-[#23406b] to-[#6a97bd]"
+            [style.background-image]="userData.cover ? 'url(' + userData.cover + ')' : null">
+            @if (isOwnProfile) {
+            <label
+                class="absolute right-3 top-3 cursor-pointer rounded-full bg-white/90 px-4 py-2 text-xs font-semibold
+                 text-[#0f1f3d] shadow transition hover:bg-white dark:bg-slate-900/80 dark:text-slate-100 dark:hover:bg-slate-900">
+                Change cover
+                <input type="file" hidden accept="image/*" (change)="onFileSelected($event, 'cover')" />
+            </label>
+            }
+        </div>
+
+        <!-- Main card -->
+        <div class="relative -mt-16 mx-2 rounded-[28px] bg-white p-5 shadow-[0_8px_30px_rgba(15,31,61,.08)]
+             sm:mx-8 sm:p-7 dark:bg-slate-900 dark:shadow-[0_8px_30px_rgba(0,0,0,.4)]">
+            <div class="flex flex-col gap-5 lg:flex-row lg:items-center">
+
+                <!-- Avatar + identity -->
+                <div class="flex items-center gap-5">
+                    <div class="relative shrink-0">
+                        <img class="h-28 w-28 rounded-full border-4 border-white object-cover ring-2 ring-[#dde5f0]
+                     dark:border-slate-900 dark:ring-slate-700" [src]="userData.photo" [alt]="userData.name" />
+                        @if (isOwnProfile) {
+                        <label title="Change photo" class="absolute bottom-1 right-1 grid h-7 w-7 cursor-pointer place-items-center rounded-full
+                       bg-[#1a73e8] font-bold text-white transition hover:bg-[#1558b8]">
+                            +
+                            <input type="file" hidden accept="image/*" (change)="onFileSelected($event, 'photo')" />
+                        </label>
+                        }
+                    </div>
+
+                    <div class="min-w-0">
+                        <h1 class="truncate text-2xl font-extrabold text-[#0f1f3d] sm:text-3xl dark:text-white">
+                            {{ userData.name }}
+                        </h1>
+                        <p class="mb-2 text-lg text-slate-500 dark:text-slate-400">&#64;{{ userData.username }}</p>
+                        <span class="inline-block rounded-full bg-[#e8f1fd] px-3 py-1 text-xs font-semibold text-[#1a73e8]
+                     dark:bg-[#1a73e8]/20 dark:text-sky-300">
+                            Route Posts member
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Stats -->
+                <div class="grid grid-cols-3 gap-3 lg:ml-auto">
+                    @for (s of stats; track s.label) {
+                    <div class="rounded-2xl border border-[#dde5f0] px-4 py-3 text-center lg:w-40
+                     dark:border-slate-700 dark:bg-slate-800/50">
+                        <span class="text-xs font-semibold uppercase tracking-wide text-[#0f1f3d] dark:text-slate-300">
+                            {{ s.label }}
+                        </span>
+                        <strong class="block text-2xl font-bold text-[#0f1f3d] sm:text-3xl dark:text-white">
+                            {{ s.value }}
+                        </strong>
+                    </div>
+                    }
+                </div>
+            </div>
+
+            <!-- About + mini stats -->
+            <div class="mt-5 grid gap-4 md:grid-cols-3">
+                <div class="rounded-2xl border border-[#dde5f0] bg-[#f6f9fe] p-4 md:col-span-2
+                 dark:border-slate-700 dark:bg-slate-800/50">
+                    <h3 class="mb-3 text-[15px] font-bold text-[#0f1f3d] dark:text-white">About</h3>
+                    <p class="my-1.5 text-slate-600 dark:text-slate-300">{{ userData.email }}</p>
+                    <p class="my-1.5 text-slate-600 dark:text-slate-300">Active on Route Posts</p>
+                </div>
+
+                <div class="flex flex-col gap-3">
+                    <div
+                        class="rounded-2xl border border-[#dde5f0] bg-[#f6f9fe] p-4 dark:border-slate-700 dark:bg-slate-800/50">
+                        <span class="text-xs font-semibold uppercase text-[#0f1f3d] dark:text-slate-300">My posts</span>
+                        <strong class="mt-1 block text-2xl text-[#0f1f3d] dark:text-white">{{ postsCount }}</strong>
+                    </div>
+                    <div
+                        class="rounded-2xl border border-[#dde5f0] bg-[#f6f9fe] p-4 dark:border-slate-700 dark:bg-slate-800/50">
+                        <span class="text-xs font-semibold uppercase text-[#0f1f3d] dark:text-slate-300">Saved
+                            posts</span>
+                        <strong class="mt-1 block text-2xl text-[#0f1f3d] dark:text-white">{{ userData.bookmarksCount
+                            }}</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="my-6 flex items-center justify-between rounded-2xl bg-white px-4 py-3 dark:bg-slate-900">
+            <div class="flex gap-1 rounded-xl bg-[#f1f4f9] p-1 dark:bg-slate-800">
+                <button type="button" (click)="setTab('posts')"
+                    class="rounded-lg px-4 py-2 text-sm font-semibold transition" [class]="activeTab === 'posts'
+            ? 'bg-white text-[#1a73e8] shadow-sm dark:bg-slate-700 dark:text-sky-300'
+            : 'text-[#0f1f3d] hover:text-[#1a73e8] dark:text-slate-300'">
+                    My Posts
+                </button>
+                @if (isOwnProfile) {
+                <button type="button" (click)="setTab('saved')"
+                    class="rounded-lg px-4 py-2 text-sm font-semibold transition" [class]="activeTab === 'saved'
+              ? 'bg-white text-[#1a73e8] shadow-sm dark:bg-slate-700 dark:text-sky-300'
+              : 'text-[#0f1f3d] hover:text-[#1a73e8] dark:text-slate-300'">
+                    Saved
+                </button>
+                }
+            </div>
+            <span
+                class="rounded-full bg-[#e8f1fd] px-3 py-1 text-sm font-bold text-[#1a73e8] dark:bg-[#1a73e8]/20 dark:text-sky-300">
+                {{ activeTab === 'posts' ? postsCount : savedList.length }}
+            </span>
+        </div>
+
+        <!-- Posts -->
+        @if (activeTab === 'posts') {
+        <app-my-posts [userId]="currentUserId!" [isOwner]="isOwnProfile" (countChange)="postsCount = $event" />
+        } @else {
+        @for (post of savedList; track post._id) {
+        <article class="mb-4 overflow-hidden rounded-2xl bg-white dark:bg-slate-900">
+            <header class="flex items-center gap-3 p-4">
+                <img class="h-10 w-10 rounded-full object-cover" [src]="post.user?.photo" alt="" />
+                <div class="min-w-0">
+                    <strong class="block truncate text-sm text-[#0f1f3d] dark:text-white">{{ post.user?.name }}</strong>
+                    <small class="text-slate-500 dark:text-slate-400">&#64;{{ post.user?.username }}</small>
+                </div>
+                <a class="ml-auto text-sm font-semibold text-[#1a73e8] hover:underline dark:text-sky-300"
+                    [routerLink]="['/details', post._id]">
+                    View details
+                </a>
+            </header>
+
+            @if (post.body) {
+            <p class="px-4 pb-3 text-[#0f1f3d] dark:text-slate-100">{{ post.body }}</p>
+            }
+            @if (post.image) {
+            <div class="flex justify-center bg-[#f6f9fe] dark:bg-slate-800/50">
+                <img class="block max-h-[420px] w-auto max-w-full object-contain" [src]="post.image" alt="" />
+            </div>
+            }
+
+            <footer class="flex flex-wrap items-center gap-5 border-t border-[#dde5f0] px-4 py-3 text-sm
+                 text-[#0f1f3d] dark:border-slate-700 dark:text-slate-300">
+                <span>{{ post.likesCount ?? 0 }} likes</span>
+                <span>{{ post.commentsCount ?? 0 }} comments</span>
+                <time class="ml-auto text-slate-500 dark:text-slate-400">
+                    {{ post.createdAt | date: 'MMM d, h:mm a' }}
+                </time>
+            </footer>
+        </article>
+        } @empty {
+        <div class="py-12 text-center text-slate-500 dark:text-slate-400">No saved posts yet</div>
+        }
+        }
+    </section>
+</div>
+} @else {
+<div class="min-h-screen bg-[#eff1f5] py-16 text-center text-slate-500 dark:bg-slate-950 dark:text-slate-400">
+    {{ hasError ? 'Failed to load profile' : 'No user found' }}
+</div>
+}

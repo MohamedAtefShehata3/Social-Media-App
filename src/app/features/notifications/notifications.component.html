@@ -1,0 +1,106 @@
+<div class="min-h-screen bg-[#eff1f5] dark:bg-slate-950">
+    <section class="mx-auto max-w-[1250px] px-4 py-4">
+        <div class="overflow-hidden rounded-3xl bg-white shadow-[0_8px_30px_rgba(15,31,61,.08)]
+             dark:bg-slate-900 dark:shadow-[0_8px_30px_rgba(0,0,0,.4)]">
+            <!-- Header -->
+            <header class="border-b border-[#dde5f0] p-5 sm:p-6 dark:border-slate-700">
+                <div class="flex flex-wrap items-start justify-between gap-3">
+                    <div>
+                        <h1 class="text-2xl font-extrabold text-[#0f1f3d] sm:text-3xl dark:text-white">Notifications
+                        </h1>
+                        <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                            Realtime updates for likes, comments, shares, and follows.
+                        </p>
+                    </div>
+
+                    <button type="button" (click)="markAllAsRead()" [disabled]="!unreadCount"
+                        class="flex items-center gap-2 rounded-xl border border-[#dde5f0] px-4 py-2 text-sm font-semibold
+                   text-[#0f1f3d] transition hover:bg-[#e8f1fd] hover:text-[#1a73e8]
+                   disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-transparent disabled:hover:text-[#0f1f3d]
+                   dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800 dark:disabled:hover:text-slate-200">
+                        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M2 12l5 5L18 6" />
+                            <path d="M13 16l1 1L22 7" />
+                        </svg>
+                        Mark all as read
+                    </button>
+                </div>
+
+                <!-- Filters -->
+                <div class="mt-4 flex gap-2">
+                    <button type="button" (click)="changeFilter('all')"
+                        class="rounded-full px-5 py-1.5 text-sm font-semibold transition"
+                        [class]="filter === 'all'
+              ? 'bg-[#1a73e8] text-white'
+              : 'bg-[#f1f4f9] text-[#0f1f3d] hover:bg-[#e8f1fd] dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'">
+                        All
+                    </button>
+                    <button type="button" (click)="changeFilter('unread')"
+                        class="rounded-full px-5 py-1.5 text-sm font-semibold transition"
+                        [class]="filter === 'unread'
+              ? 'bg-[#1a73e8] text-white'
+              : 'bg-[#f1f4f9] text-[#0f1f3d] hover:bg-[#e8f1fd] dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'">
+                        Unread
+                        @if (unreadCount) {
+                        <span class="ml-1 rounded-full bg-white/25 px-1.5 text-xs">{{ unreadCount }}</span>
+                        }
+                    </button>
+                </div>
+            </header>
+
+            <!-- List -->
+            <div class="space-y-2 p-4">
+                @if (isLoading) {
+                @for (i of [1, 2, 3]; track i) {
+                <div
+                    class="flex animate-pulse items-center gap-3 rounded-2xl border border-[#dde5f0] p-4 dark:border-slate-700">
+                    <div class="h-11 w-11 rounded-full bg-slate-200 dark:bg-slate-700"></div>
+                    <div class="flex-1 space-y-2">
+                        <div class="h-3 w-2/3 rounded bg-slate-200 dark:bg-slate-700"></div>
+                        <div class="h-3 w-1/4 rounded bg-slate-200 dark:bg-slate-700"></div>
+                    </div>
+                </div>
+                }
+                } @else if (hasError) {
+                <div class="rounded-2xl border border-red-200 bg-red-50 p-6 text-center text-sm text-red-600
+                      dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-300">
+                    Failed to load notifications.
+                    <button type="button" (click)="loadNotifications()"
+                        class="ml-1 font-semibold underline">Retry</button>
+                </div>
+                } @else {
+                @for (n of notifications; track n._id) {
+                <button type="button" (click)="markAsRead(n)"
+                    class="flex w-full items-center gap-3 rounded-2xl border p-4 text-left transition"
+                    [class]="n.isRead
+                ? 'border-[#dde5f0] bg-white hover:bg-[#f6f9fe] dark:border-slate-700 dark:bg-slate-900 dark:hover:bg-slate-800/60'
+                : 'border-[#1a73e8]/30 bg-[#e8f1fd] hover:bg-[#dbe9fc] dark:border-[#1a73e8]/40 dark:bg-[#1a73e8]/10 dark:hover:bg-[#1a73e8]/20'">
+                    <img class="h-11 w-11 shrink-0 rounded-full object-cover ring-2 ring-white dark:ring-slate-700"
+                        [src]="n.actor?.photo || n.sender?.photo" alt="" />
+
+                    <div class="min-w-0 flex-1">
+                        <p class="text-sm text-[#0f1f3d] dark:text-slate-100">
+                            <strong>{{ n.actor?.name || n.sender?.name }}</strong>
+                            {{ getMessage(n) }}
+                        </p>
+                        <time class="text-xs text-slate-500 dark:text-slate-400">
+                            {{ n.createdAt | date: 'MMM d, h:mm a' }}
+                        </time>
+                    </div>
+
+                    @if (!n.isRead) {
+                    <span class="h-2.5 w-2.5 shrink-0 rounded-full bg-[#1a73e8]"></span>
+                    }
+                </button>
+                } @empty {
+                <div class="rounded-2xl border border-[#dde5f0] bg-[#f6f9fe] py-10 text-center text-sm text-slate-500
+                     dark:border-slate-700 dark:bg-slate-800/50 dark:text-slate-400">
+                    {{ filter === 'unread' ? 'No unread notifications.' : 'No notifications yet.' }}
+                </div>
+                }
+                }
+            </div>
+        </div>
+    </section>
+</div>

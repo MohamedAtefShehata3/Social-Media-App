@@ -1,0 +1,285 @@
+<div class="flex flex-col gap-4">
+
+    <!-- ============================================================ -->
+    <!-- ===== Composer (create / edit post) ===== -->
+    <!-- ============================================================ -->
+    <div class="rounded-2xl border shadow-sm p-4 sm:p-5 transition-colors duration-200
+              bg-[#ffffff] border-gray-100 dark:bg-[#1a2233] dark:border-gray-700">
+
+        <form (submit)="isEditMode ? updatePost($event) : submitForm($event)">
+            <div class="flex gap-3">
+                <img [src]="currentUser?.photo || 'assets/default-profile.png'" [alt]="currentUser?.name"
+                    class="w-11 h-11 rounded-full object-cover ring-2 ring-brand-purple/20 shrink-0" />
+
+                <div class="flex-1">
+                    <textarea [formControl]="content" rows="3"
+                        placeholder="What's on your mind, {{ currentUser?.name?.split(' ')?.[0] || '' }}?"
+                        class="w-full resize-none text-sm rounded-xl px-4 py-3 outline-none border transition-colors duration-200
+                     bg-gray-50 border-gray-200 text-gray-700 placeholder:text-gray-400
+                     focus:ring-2 focus:ring-brand-purple/30 focus:border-brand-purple/40
+                     dark:bg-[#111827] dark:border-gray-700 dark:text-gray-200 dark:placeholder:text-gray-500"></textarea>
+
+                    <!-- image preview -->
+                    @if (imgUrl) {
+                    <div class="relative mt-3 inline-block">
+                        <img [src]="imgUrl" alt="preview"
+                            class="max-h-64 rounded-xl border border-gray-100 dark:border-gray-700 object-cover" />
+                        <button type="button" (click)="removeImg()"
+                            class="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/60 hover:bg-black/80 text-white flex items-center justify-center transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24"
+                                stroke-width="2.5" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+                    }
+                </div>
+            </div>
+
+            <div class="flex items-center justify-between mt-4 pt-3 border-t border-gray-100 dark:border-gray-700">
+                <div class="flex items-center gap-2">
+                    <!-- photo upload -->
+                    <label
+                        class="flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-lg cursor-pointer transition-colors duration-150
+                        text-gray-500 hover:bg-gray-50 hover:text-brand-purple dark:text-gray-400 dark:hover:bg-white/5">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-[18px] h-[18px]" fill="none"
+                            viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14M4 6h16a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V8a2 2 0 012-2z" />
+                        </svg>
+                        Photo
+                        <input type="file" accept="image/*" class="hidden" (change)="changeImg($event)" />
+                    </label>
+
+                    <!-- privacy select -->
+                    <select [formControl]="privacy" class="text-sm font-medium rounded-lg px-2.5 py-1.5 outline-none border cursor-pointer transition-colors duration-150
+                     bg-gray-50 border-gray-200 text-gray-600
+                     dark:bg-white/5 dark:border-gray-700 dark:text-gray-300">
+                        <option value="public">🌐 Public</option>
+                        <option value="friends">👥 Friends</option>
+                        <option value="private">🔒 Only me</option>
+                    </select>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    @if (isEditMode) {
+                    <button type="button" (click)="cancelEdit()"
+                        class="text-sm font-semibold px-4 py-2 rounded-pill text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-white/5 transition-colors">
+                        Cancel
+                    </button>
+                    }
+                    <button type="submit" [disabled]="isPosting"
+                        class="flex items-center gap-1.5 text-sm font-semibold px-5 py-2 rounded-pill bg-brand-gradient text-white shadow-card hover:opacity-90 transition-opacity disabled:opacity-60 disabled:cursor-not-allowed">
+                        @if (isPosting) {
+                        <i class="fa-solid fa-circle-notch fa-spin"></i>
+                        <span>{{ isEditMode ? 'Updating...' : 'Posting...' }}</span>
+                        } @else {
+                        {{ isEditMode ? 'Update' : 'Post' }}
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24"
+                            stroke-width="2" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                        </svg>
+                        }
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- ===== Post list ===== -->
+    <!-- ============================================================ -->
+    @for (post of postList; track post._id) {
+    <article class="rounded-2xl border shadow-sm overflow-hidden transition-colors duration-200
+              bg-[#ffffff] border-gray-100 dark:bg-[#1a2233] dark:border-gray-700">
+
+        <!-- ----- post header ----- -->
+        <div class="flex items-center justify-between px-4 sm:px-5 pt-4">
+            <div class="flex items-center gap-3 min-w-0">
+                <img [src]="post.user.photo || 'assets/default-profile.png'" [alt]="post.user.name"
+                    class="w-11 h-11 rounded-full object-cover ring-2 ring-brand-purple/20 shrink-0" />
+                <div class="min-w-0">
+                    <p class="font-semibold text-sm text-gray-800 dark:text-gray-100 truncate">
+                        {{ post.user.name }}
+                    </p>
+                    <div class="flex items-center gap-1.5 text-xs text-gray-400 dark:text-gray-500">
+                        <span>{{ post.createdAt | timeAgo }}</span>
+                        <span>·</span>
+                        <span class="capitalize">{{ post.privacy }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- owner menu -->
+            @if (post.user._id === currentUser?._id) {
+            <div class="relative">
+                <button type="button" (click)="toggleMenu(post._id)"
+                    class="w-8 h-8 rounded-full flex items-center justify-center text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                        <circle cx="5" cy="12" r="2" />
+                        <circle cx="12" cy="12" r="2" />
+                        <circle cx="19" cy="12" r="2" />
+                    </svg>
+                </button>
+
+                @if (activeMenuId === post._id) {
+                <div class="absolute right-0 mt-1 w-36 rounded-xl shadow-card border z-20 overflow-hidden
+                       bg-white border-gray-100 dark:bg-[#212b40] dark:border-gray-700">
+                    <button type="button" (click)="EditPost(post)"
+                        class="w-full flex items-center gap-2 text-left px-3.5 py-2.5 text-sm text-gray-600 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-white/5">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24"
+                            stroke-width="2" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                        Edit
+                    </button>
+                    <button type="button" (click)="deletePostItem(post._id)"
+                        class="w-full flex items-center gap-2 text-left px-3.5 py-2.5 text-sm text-danger hover:bg-red-50 dark:hover:bg-red-900/20">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24"
+                            stroke-width="2" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                        Delete
+                    </button>
+                </div>
+                }
+            </div>
+            }
+        </div>
+
+        <!-- ----- post body ----- -->
+        @if (post.body) {
+        <p class="px-4 sm:px-5 mt-3 text-sm leading-relaxed text-gray-700 dark:text-gray-200 whitespace-pre-line">
+            {{ post.body }}
+        </p>
+        }
+
+        @if (post.image) {
+        <img [src]="post.image" alt="post image" class="w-full max-h-[520px] object-cover mt-3" />
+        }
+
+        <!-- ----- stats row ----- -->
+        <div class="flex items-center justify-between px-4 sm:px-5 mt-3 text-xs text-gray-400 dark:text-gray-500">
+            <div class="flex items-center gap-1.5">
+                @if (post.likesCount > 0) {
+                <span class="w-4 h-4 rounded-full bg-brand-gradient flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-2.5 h-2.5 text-white" fill="currentColor"
+                        viewBox="0 0 24 24">
+                        <path
+                            d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                    </svg>
+                </span>
+                <span>{{ post.likesCount }}</span>
+                }
+            </div>
+            <div class="flex items-center gap-3">
+                @if (post.commentsCount > 0) {
+                <span>{{ post.commentsCount }} comments</span>
+                }
+                @if (post.sharesCount > 0) {
+                <span>{{ post.sharesCount }} shares</span>
+                }
+            </div>
+        </div>
+
+        <!-- ----- actions row ----- -->
+        <div class="grid grid-cols-3 mx-4 sm:mx-5 mt-2 mb-1 border-t border-gray-100 dark:border-gray-700">
+            <button type="button" (click)="onLikeClick(post)"
+                class="flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-semibold transition-colors duration-150"
+                [class]="post.isLiked
+                    ? 'text-brand-pink'
+                    : 'text-gray-500 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-white/5'">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-[18px] h-[18px]"
+                    [attr.fill]="post.isLiked ? 'currentColor' : 'none'" viewBox="0 0 24 24" stroke-width="2"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                </svg>
+                Like
+            </button>
+
+            <button type="button" (click)="toggleComments(post._id)"
+                class="flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-semibold text-gray-500 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-white/5 transition-colors duration-150">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-[18px] h-[18px]" fill="none" viewBox="0 0 24 24"
+                    stroke-width="2" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.86 9.86 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                </svg>
+                Comment
+            </button>
+
+            <button type="button" (click)="openShareModal(post)"
+                class="flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-semibold text-gray-500 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-white/5 transition-colors duration-150">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-[18px] h-[18px]" fill="none" viewBox="0 0 24 24"
+                    stroke-width="2" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M8.684 13.342a3 3 0 100-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 8a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                </svg>
+                Share
+            </button>
+        </div>
+
+        <!-- ----- comments section (visibility handled inside CommentsComponent) ----- -->
+        <div class="border-t border-gray-100 dark:border-gray-700">
+            <app-comments [postId]="post._id"></app-comments>
+        </div>
+    </article>
+    }
+
+    @if (postList.length === 0) {
+    <div class="rounded-2xl border border-dashed p-10 text-center border-gray-200 dark:border-gray-700">
+        <p class="text-sm text-gray-400 dark:text-gray-500">No posts yet — be the first to share something!</p>
+    </div>
+    }
+</div>
+
+<!-- ============================================================ -->
+<!-- ===== Share modal ===== -->
+<!-- ============================================================ -->
+@if (isShareModalOpen) {
+<div class="fixed inset-0 z-50 flex items-center justify-center px-4">
+    <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" (click)="closeShareModal()"></div>
+
+    <div class="relative w-full max-w-md rounded-2xl shadow-card p-5 z-10
+              bg-[#ffffff] dark:bg-[#1a2233]">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="font-bold text-gray-800 dark:text-gray-100">Share post</h3>
+            <button type="button" (click)="closeShareModal()"
+                class="w-8 h-8 rounded-full flex items-center justify-center text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+
+        <form (submit)="confirmShare($event)">
+            <textarea [formControl]="shareContent" rows="3" placeholder="Say something about this..." class="w-full resize-none text-sm rounded-xl px-4 py-3 outline-none border transition-colors duration-200
+             bg-gray-50 border-gray-200 text-gray-700 placeholder:text-gray-400
+             focus:ring-2 focus:ring-brand-purple/30
+             dark:bg-[#111827] dark:border-gray-700 dark:text-gray-200"></textarea>
+
+            @if (selectedPostForShare) {
+            <div class="mt-3 rounded-xl border p-3 border-gray-100 dark:border-gray-700">
+                <p class="text-xs font-semibold text-gray-500 dark:text-gray-400">{{ selectedPostForShare.user?.name }}
+                </p>
+                <p class="text-sm text-gray-600 dark:text-gray-300 truncate mt-0.5">{{ selectedPostForShare.body }}</p>
+            </div>
+            }
+
+            <div class="flex justify-end gap-2 mt-4">
+                <button type="button" (click)="closeShareModal()"
+                    class="text-sm font-semibold px-4 py-2 rounded-pill text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-white/5 transition-colors">
+                    Cancel
+                </button>
+                <button type="submit"
+                    class="text-sm font-semibold px-5 py-2 rounded-pill bg-brand-gradient text-white shadow-card hover:opacity-90 transition-opacity">
+                    Share now
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+}
